@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>云朵音游</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #87CEEB, #E0F6FF);
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+        }
+
+        .game-container {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #playBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            background: #FFB6C1;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #playBtn:active {
+            transform: translate(-50%, -48%) scale(0.95);
+        }
+
+        #counter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #333;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cloud {
+            width: 80px;
+            height: 40px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            position: absolute;
+            animation: fall 8s linear;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        @keyframes fall {
+            from { top: -50px; opacity: 0; }
+            to { top: 100vh; opacity: 1; }
+        }
+
+        #gachaBtn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 25px;
+            background: #FF69B4;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <button id="playBtn">PLAY</button>
+        <div id="counter">☁️ 0</div>
+        <div id="gameArea"></div>
+        <button id="gachaBtn">消耗10云朵抽盲盒</button>
+    </div>
+
+    <script>
+        let score = 0;
+        let gameInterval;
+        const playBtn = document.getElementById('playBtn');
+        const counter = document.getElementById('counter');
+        const gameArea = document.getElementById('gameArea');
+        const gachaBtn = document.getElementById('gachaBtn');
+
+        // 游戏初始化
+        playBtn.addEventListener('click', startGame);
+        
+        function startGame() {
+            playBtn.style.display = 'none';
+            gameInterval = setInterval(createCloud, 2000);
+        }
+
+        function createCloud() {
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud';
+            cloud.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+            
+            // 云朵动画结束自动移除
+            cloud.addEventListener('animationend', () => {
+                cloud.remove();
+            });
+
+            // 点击处理
+            cloud.addEventListener('click', () => {
+                score++;
+                cloud.style.animation = 'none';
+                cloud.style.transform = 'scale(1.2)';
+                cloud.style.opacity = '0';
+                setTimeout(() => cloud.remove(), 300);
+                updateCounter();
+            });
+
+            gameArea.appendChild(cloud);
+        }
+
+        // 更新计数器
+        function updateCounter() {
+            counter.textContent = `☁️ ${score}`;
+            gachaBtn.style.display = score >= 10 ? 'block' : 'none';
+        }
+
+        // 盲盒功能
+        gachaBtn.addEventListener('click', () => {
+            if(score >= 10) {
+                score -= 10;
+                openGacha();
+                updateCounter();
+            }
+        });
+
+        function openGacha() {
+            const rewards = [
+                '🌈 彩虹云皮肤',
+                '⭐️ 星星贴纸',
+                '🎵 新背景音乐',
+                '🌀 旋转特效',
+                '🌙 夜间主题'
+            ];
+            const reward = rewards[Math.floor(Math.random() * rewards.length)];
+            
+            // 创建奖励动画
+            const popup = document.createElement('div');
+            popup.textContent = `获得：${reward}`;
+            popup.style.position = 'fixed';
+            popup.style.top = '40%';
+            popup.style.left = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.style.background = 'rgba(255,255,255,0.95)';
+            popup.style.padding = '20px';
+            popup.style.borderRadius = '15px';
+            popup.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+            popup.style.animation = 'pop 0.5s';
+            
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+        }
+
+        // 禁止页面缩放
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
